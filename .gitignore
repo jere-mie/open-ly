@@ -8,6 +8,7 @@
 *.so
 *.dylib
 
+tmp/
 *.db
 *.db-shm
 *.db-wal
