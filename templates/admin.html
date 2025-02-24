@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="center">Admin page, logged in :)</h1>
+<a href="/logout">Logout</a>
+<form onsubmit="submitForm(); return false">
+    <label for="long_url">URL:</label>
+    <input type="text" id="long_url" name="long_url">
+    <input type="submit" value="Create Short Link">
+</form>
+
+<script>
+    function submitForm() {
+        var longUrl = document.getElementById('long_url').value;
+        fetch('/shorten', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ long_url: longUrl })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('long_url').value = '';
+            alert('Short link created: ' + data.short_id);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+    }
+</script>
+
+{% endblock %}

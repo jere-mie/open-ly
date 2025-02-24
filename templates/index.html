@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Open-ly</h1>
+    <p>Simple, FOSS <span id="url">URL</span> shortener</p>
+    <p>Check out <a href="https://github.com/jere-mie/open-ly">the source code</a>!</p>
+    <script>
+        var count = 0;
+        var urlSpan = document.getElementById("url");
+        urlSpan.addEventListener("click", (e) => {
+            count++;
+            if(count >= 3){
+                document.location.href = "/loginadmin";
+            }
+        })
+    </script>
+    
+{% endblock %}

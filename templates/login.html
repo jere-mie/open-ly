@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<div style="display: flex; justify-content: center;">
+    <form method="post">
+        <h2>Login to Manage Short Links</h2>
+        <fieldset>
+            <label>
+                Access Key
+                <input type="password" name="password" />
+            </label>
+        </fieldset>
+        <input type="submit" value="Login" />
+    </form>
+</div>
+{% endblock %}
