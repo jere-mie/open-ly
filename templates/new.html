@@ -2,27 +2,47 @@
 {% block content %}
 <h1 class="center">Create New Short Link</h1>
 
+<article id="error" class="pico-background-pink-500" style="display: none;"></article>
+
 <form onsubmit="submitForm(); return false">
     <label for="long_url">URL:</label>
-    <input type="text" id="long_url" autocorrect="off" spellcheck="false">
+    <input type="text" id="long_url" autocorrect="off" spellcheck="false" required>
+    <label for="short_id">Custom URL Ending:</label>
+    <input type="text" id="short_id" autocorrect="off" spellcheck="false">
     <input type="submit" value="Create Short Link">
 </form>
 
 <script>
     function submitForm() {
-        const longUrl = document.getElementById('long_url').value;
+
+        const long_url = document.getElementById('long_url').value;
+        let short_id = document.getElementById('short_id').value;
+
+        // replace whitespace with hyphens
+        short_id = short_id.replace(/\s+/g, '-');
+
+        // only allow alphanumeric characters, hyphens, and underscores
+        short_id = short_id.replace(/[^a-zA-Z0-9-_]/g, '');
+
         const formData = new FormData();
-        formData.append('long_url', longUrl);
+        formData.append('long_url', long_url);
+        formData.append('short_id', short_id);
         fetch('/shorten', {
             method: 'POST',
             body: formData,
         })
         .then(response => response.json())
         .then(data => {
+            if (data.error) {
+                document.getElementById('error').innerText = data.error;
+                document.getElementById('error').style.display = 'block';
+                return
+            }
             window.location.href = '/admin';
         })
         .catch(error => {
-            console.error('Error:', error);
+            document.getElementById('error').innerText = error;
+            document.getElementById('error').style.display = 'block';
         })
     }
 </script>

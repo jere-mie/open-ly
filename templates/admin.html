@@ -1,9 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1 class="center">Manage Short Links
-    <a role="button" href="/logout">Logout</a>
-    <a role="button" href="/new">Create New Short Link</a>
-</h1>
+<h1 class="center">Manage Short Links</h1>
+<p><a href="/new">New Link</a></p>
 <br>
 <div class="overflow-auto">
     <table>
@@ -39,7 +37,7 @@
                     button.innerText = "Copied!";
                     setTimeout(function() {
                         button.innerText = "Copy";
-                    }, 2000);
+                    }, 1000);
                 });
             });
         }

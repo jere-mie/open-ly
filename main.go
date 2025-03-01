@@ -63,11 +63,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Set database connection pooling limits
-	db.SetMaxOpenConns(1) // SQLite supports only one writer at a time
-	db.SetMaxIdleConns(1)
-	db.SetConnMaxLifetime(time.Minute * 5)
-
 	// Create tables if they don't exist
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS links (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -248,14 +243,38 @@ func main() {
 		}
 		defer stmt.Close()
 
-		shortID := GenerateShortID()
-		_, err = stmt.Exec(shortID, c.FormValue("long_url"))
+		longURL := c.FormValue("long_url")
+		shortID := c.FormValue("short_id")
+		if shortID == "" {
+			shortID = GenerateShortID()
+		}
+
+		// disallow short_id that matches existing routes or common phrases
+		routes := []string{"home", "new", "shorten", "loginadmin", "logout", "delete", "admin", "login", "register"}
+		for _, route := range routes {
+			if shortID == route {
+				return c.JSON(fiber.Map{"error": "Custom URL ending is reserved"})
+			}
+		}
+
+		// check if short_id already exists
+		var count int
+		err = db.QueryRow("SELECT COUNT(*) FROM links WHERE short_id = ?", shortID).Scan(&count)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(fiber.Map{"error": "Internal Server Error"})
+		}
+		if count > 0 {
+			return c.JSON(fiber.Map{"error": "Custom URL ending already exists"})
+		}
+
+		_, err = stmt.Exec(shortID, longURL)
 		if err != nil {
 			log.Println(err)
 			return c.JSON(fiber.Map{"error": "Internal Server Error"})
 		}
 
-		return c.JSON(fiber.Map{"short_id": shortID})
+		return c.JSON(fiber.Map{"status": "success"})
 	})
 
 	app.Get("/delete/:id", func(c *fiber.Ctx) error {

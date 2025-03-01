@@ -6,11 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open-ly</title>
     <link rel="stylesheet" href="/static/pico.min.css">
+    <link rel="stylesheet" href="/static/pico.colors.min.css">
     <link rel="icon" type="image/png" href="/static/favicon.png">
-
 </head>
 
-<body>
+<body data-theme="dark">
+    <nav style="margin: 0px 48px;">
+        <ul>
+          <li><strong><a href="/" class="contrast">Open-ly</a></strong></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/jere-mie/open-ly" target="_blank">GitHub</a></li>
+          {% if current_user %}
+          <li>
+            <details class="dropdown">
+              <summary>
+                Admin
+              </summary>
+              <ul dir="rtl">
+                <li><a href="/admin">Manage Links</a></li>
+                <li><a href="/new">New Link</a></li>
+                <li><a href="/logout">Logout</a></li>
+              </ul>
+            </details>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
     <br><br>
     <div class="container">
         {% block content %}
