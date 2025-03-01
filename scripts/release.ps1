@@ -16,8 +16,17 @@ $releaseName = "Release $tag"
 
 Write-Host "Creating GitHub release for tag: $tag"
 
-# Create the release
-$releaseResult = gh release create "$tag" bin/* --title "$releaseName" --notes "Automated release for $tag"
+# Get all files in the 'bin' directory (recursively if needed)
+$files = Get-ChildItem -Path "bin" -File
+
+# Ensure that we have at least one file
+if ($files.Count -eq 0) {
+    Write-Host "No files found in the 'bin' directory."
+    exit 1
+}
+
+# Create the release with the files
+$releaseResult = gh release create "$tag" $files.FullName --title "$releaseName" --notes "Automated release for $tag"
 
 if ($?) {
     Write-Host "GitHub release created successfully."
