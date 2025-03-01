@@ -1,32 +1,49 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1 class="center">Admin page, logged in :)</h1>
-<a href="/logout">Logout</a>
-<form onsubmit="submitForm(); return false">
-    <label for="long_url">URL:</label>
-    <input type="text" id="long_url" name="long_url">
-    <input type="submit" value="Create Short Link">
-</form>
+<h1 class="center">Manage Short Links
+    <a role="button" href="/logout">Logout</a>
+    <a role="button" href="/new">Create New Short Link</a>
+</h1>
+<br>
+<div class="overflow-auto">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Short ID</th>
+        <th>Long URL</th>
+        <th>Actions</th>
+      </tr>
+      {% for link in links %}
+      <tr>
+        <td>{{ link.ID }}</td>
+        <td>{{ link.ShortID }}</td>
+        <td>{{ link.LongURL }}</td>
+        <td>
+            <button class="copy-button" data-clipboard-text="{{ link.ShortID }}">Copy</button>
+            <a role="button" href="/delete/{{ link.ID }}">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
 
 <script>
-    function submitForm() {
-        var longUrl = document.getElementById('long_url').value;
-        fetch('/shorten', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ long_url: longUrl })
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('long_url').value = '';
-            alert('Short link created: ' + data.short_id);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        })
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+        const copyButtons = document.getElementsByClassName("copy-button");
+        for (var i = 0; i < copyButtons.length; i++) {
+            const button = copyButtons[i];
+            button.addEventListener("click", function() {
+                const short_id = this.getAttribute("data-clipboard-text");
+                const link = window.location.origin + "/" + short_id;
+                navigator.clipboard.writeText(link).then(function() {
+                    button.innerText = "Copied!";
+                    setTimeout(function() {
+                        button.innerText = "Copy";
+                    }, 2000);
+                });
+            });
+        }
+    })
 </script>
 
 {% endblock %}

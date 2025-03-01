@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="center">Create New Short Link</h1>
+
+<form onsubmit="submitForm(); return false">
+    <label for="long_url">URL:</label>
+    <input type="text" id="long_url" autocorrect="off" spellcheck="false">
+    <input type="submit" value="Create Short Link">
+</form>
+
+<script>
+    function submitForm() {
+        const longUrl = document.getElementById('long_url').value;
+        const formData = new FormData();
+        formData.append('long_url', longUrl);
+        fetch('/shorten', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = '/admin';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        })
+    }
+</script>
+
+{% endblock %}

@@ -35,6 +35,13 @@ var Version string
 // Global database mutex for synchronizing write operations
 var dbMutex sync.Mutex
 
+type Link struct {
+	ID        int
+	ShortID   string
+	LongURL   string
+	CreatedAt time.Time
+}
+
 func main() {
 	log.Println("Starting the application...")
 
@@ -129,9 +136,38 @@ func main() {
 		var currentUser = c.Locals("current_user")
 		if currentUser == nil {
 			log.Println("Admin login required")
-			return c.Redirect("/loginadmin")
+			return c.Render("404", fiber.Map{})
 		}
-		return c.Render("admin", fiber.Map{})
+
+		rows, err := db.Query("SELECT id, short_id, long_url, created_at FROM links")
+		if err != nil {
+			log.Println(err)
+			return c.Render("500", fiber.Map{})
+		}
+		defer rows.Close()
+
+		var links []Link
+		for rows.Next() {
+			var link Link
+			err := rows.Scan(&link.ID, &link.ShortID, &link.LongURL, &link.CreatedAt)
+			if err != nil {
+				log.Println(err)
+				return c.Render("500", fiber.Map{})
+			}
+			links = append(links, link)
+		}
+
+		return c.Render("admin", fiber.Map{
+			"links": links,
+		})
+	})
+
+	app.Get("/new", func(c *fiber.Ctx) error {
+		var currentUser = c.Locals("current_user")
+		if currentUser == nil {
+			return c.Render("404", fiber.Map{})
+		}
+		return c.Render("new", fiber.Map{})
 	})
 
 	app.Get("/logout", func(c *fiber.Ctx) error {
@@ -220,6 +256,38 @@ func main() {
 		}
 
 		return c.JSON(fiber.Map{"short_id": shortID})
+	})
+
+	app.Get("/delete/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		dbMutex.Lock()
+		defer dbMutex.Unlock()
+
+		stmt, err := db.Prepare("DELETE FROM links WHERE id = ?")
+		if err != nil {
+			log.Println(err)
+			return c.Redirect("/admin")
+		}
+		defer stmt.Close()
+
+		_, err = stmt.Exec(id)
+		if err != nil {
+			log.Println(err)
+			return c.Redirect("/admin")
+		}
+
+		return c.Redirect("/admin")
+	})
+
+	app.Get("/:short_id", func(c *fiber.Ctx) error {
+		shortID := c.Params("short_id")
+		var link Link
+		err := db.QueryRow("SELECT id, short_id, long_url, created_at FROM links WHERE short_id = ?", shortID).Scan(&link.ID, &link.ShortID, &link.LongURL, &link.CreatedAt)
+		if err != nil {
+			log.Println(err)
+			return c.Render("404", fiber.Map{})
+		}
+		return c.Redirect(link.LongURL)
 	})
 
 	log.Printf("Listening on port %s", PORT)
